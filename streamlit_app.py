@@ -288,7 +288,7 @@ def run_all_parseltongue_encodings(input_text):
     encodings = [
         # Base64 variants
         # Correct and Pythonic
-        lambda x: base64.b64encode(x.encode('utf-8')).decode('utf-8')
+        lambda x: base64.b64encode(x.encode('utf-8')).decode('utf-8'),
         
         # Binary transformations
         lambda x: ' '.join(format(ord(c), '08b') for c in x),
