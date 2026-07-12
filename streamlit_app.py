@@ -250,6 +250,7 @@ def execution_tunnel(model_id, sys_prompt, user_prompt, api_key, params):
         return {"model": model_id, "output": f"❌ Pipeline Exception: {str(e)}", "time": time.time() - start_time, "error": True}
 
 # --- NEW FEATURE IMPLEMENTATIONS ---
+# --- NEW FEATURE IMPLEMENTATIONS ---
 
 # ULTRAPLINIAN: Query ALL models, AI judge picks best
 def run_ultraplinian_mode(all_tasks, openrouter_key, tuned_params):
@@ -370,7 +371,7 @@ def run_g0dm0d3_classic_mode(all_tasks, openrouter_key, tuned_params):
     ]
     
     # Create payload matrix
-payloads = []
+    payloads = []
     for prompt in l1bert4s_prompts:
         for task in all_tasks:
             payloads.append({
