@@ -287,8 +287,8 @@ def run_ultraplinian_mode(all_tasks, openrouter_key, tuned_params):
 def run_all_parseltongue_encodings(input_text):
     encodings = [
         # Base64 variants
-        lambda x: base64.b64encode(base64.b64encode(x.encode('utf-8')).decode('utf-8').encode('utf-8')).decode('utf-8'),
-        lambda x: codecs.encode(codecs.encode(x.encode('utf-8'), 'base64').decode('utf-8'), 'base64').decode('utf-8'),
+        # Correct and Pythonic
+        lambda x: base64.b64encode(x.encode('utf-8')).decode('utf-8')
         
         # Binary transformations
         lambda x: ' '.join(format(ord(c), '08b') for c in x),
