@@ -401,6 +401,7 @@ def run_g0dm0d3_classic_mode(all_tasks, openrouter_key, tuned_params):
     return sorted(results, key=lambda x: calculate_composite_score(x["output"], x["time"])[0], reverse=True)
 
 # --- UPDATED MAIN EXECUTION LOGIC ---
+# --- UPDATED MAIN EXECUTION LOGIC ---
 if prompt := st.chat_input("Inject instruction payload..."):
     if not openrouter_key:
         st.error("Authentication missing! Provide OpenRouter API Key.")
@@ -423,6 +424,9 @@ if prompt := st.chat_input("Inject instruction payload..."):
                 "model": model,
                 "user_prompt": encoding
             })
+    
+    # Calculate tuning parameters once
+    tuned_params = get_autotune_parameters(autotune_profile)
     
     # Execute concurrently
     evaluated_results = []
