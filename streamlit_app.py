@@ -413,49 +413,39 @@ if prompt := st.chat_input("Inject instruction payload..."):
     with st.chat_message("user"):
         st.markdown(prompt)
         
-    # Apply all Parseltongue encodings in parallel
+    # Apply all Parseltongue encodings
     all_encodings = run_all_parseltongue_encodings(prompt)
     
-    # Create tasks for each encoding
-    all_tasks = []
-    for encoding in all_encodings:
-        for model in selected_models:
-            all_tasks.append({
-                "model": model,
-                "user_prompt": encoding
-            })
+    # Create tasks
+    all_tasks = [{"model": model, "user_prompt": encoding} for encoding in all_encodings for model in selected_models]
     
-    # Calculate tuning parameters once
+    # Setup Live UI
+    st.subheader("⚡ Real-Time Injection Feed")
+    results_container = st.container()
+    progress_bar = st.progress(0)
+    status_text = st.empty()
+    
+    evaluated_results = []
     tuned_params = get_autotune_parameters(autotune_profile)
     
-    # Execute concurrently
-    evaluated_results = []
-    progress_bar = st.progress(0)
-    
+    # Execution
     with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
         future_to_task = {
-            executor.submit(
-                execution_tunnel, 
-                task["model"], 
-                "",  # No system prompt for parseltongue
-                task["user_prompt"], 
-                openrouter_key, 
-                tuned_params
-            ): task for task in all_tasks
+            executor.submit(execution_tunnel, task["model"], "", task["user_prompt"], openrouter_key, tuned_params): task 
+            for task in all_tasks
         }
         
         for idx, future in enumerate(concurrent.futures.as_completed(future_to_task)):
             task_meta = future_to_task[future]
             response_data = future.result()
             
-            # Evaluate quality
+            # Evaluate
             normalized_output = apply_stm_normalization(response_data["output"], stm_direct)
             score, status = calculate_composite_score(normalized_output, response_data["time"])
             
             result_record = {
                 "model": task_meta["model"],
                 "encoding": task_meta["user_prompt"],
-                "raw_output": response_data["output"],
                 "normalized_output": normalized_output,
                 "time": response_data["time"],
                 "quality_score": score,
@@ -464,33 +454,23 @@ if prompt := st.chat_input("Inject instruction payload..."):
             }
             evaluated_results.append(result_record)
             
+            # Update Live UI
             progress_bar.progress((idx + 1) / len(all_tasks))
+            status_text.text(f"Processed {idx + 1}/{len(all_tasks)} payloads...")
+            
+            with results_container:
+                with st.expander(f"{result_record['model']} | {result_record['status']} | Score: {result_record['quality_score']}"):
+                    st.code(result_record['normalized_output'], language="text")
 
-    # Display results
-    # ... (Your previous code executing concurrent.futures) ...
-    # ... (The loop where you append to evaluated_results) ...
-    # ... (The progress_bar update) ...
-
-    # REPLACE EVERYTHING BELOW THIS POINT WITH THE NEW CODE:
+    status_text.success("All injections complete.")
     
-    # --- DISPLAY ALL RESULTS ---
-    st.subheader("📡 Multi-Vector Response Array")
-    
-    # Sort results by quality score descending
+    # Final Sorted Display
+    st.subheader("📊 Final Ranked Results")
     sorted_results = sorted(evaluated_results, key=lambda x: x["quality_score"], reverse=True)
-    
-    # Create tabs for cleaner navigation
     tabs = st.tabs([f"{r['model'].split('/')[0]} ({r['quality_score']})" for r in sorted_results])
     
     for i, tab in enumerate(tabs):
         with tab:
-            result = sorted_results[i]
-            col1, col2 = st.columns([1, 4])
-            with col1:
-                st.metric("Score", result["quality_score"])
-                st.write(f"**Status:** {result['status']}")
-                st.write(f"**Latency:** {result['time']:.2f}s")
-            with col2:
-                st.code(result['normalized_output'], language="text")
-                with st.expander("View Raw Payload"):
-                    st.text(result['encoding'])
+            res = sorted_results[i]
+            st.metric("Final Score", res["quality_score"])
+            st.code(res['normalized_output'], language="text")
