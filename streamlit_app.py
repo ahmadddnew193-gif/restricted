@@ -282,8 +282,7 @@ def run_ultraplinian_mode(all_tasks, openrouter_key, tuned_params):
         "status": calculate_composite_score(best_result["output"], best_result["time"])[1]
     }
 
-# PARSELTONGUE: 33 text obfuscations race in parallel
-# PARSELTONGUE: 33 text obfuscations race in parallel
+
 # PARSELTONGUE: 33 text obfuscations race in parallel
 def run_all_parseltongue_encodings(input_text):
     encodings = [
