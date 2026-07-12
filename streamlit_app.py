@@ -467,7 +467,30 @@ if prompt := st.chat_input("Inject instruction payload..."):
             progress_bar.progress((idx + 1) / len(all_tasks))
 
     # Display results
-    best_result = sorted(evaluated_results, key=lambda x: x["quality_score"], reverse=True)[0]
+    # ... (Your previous code executing concurrent.futures) ...
+    # ... (The loop where you append to evaluated_results) ...
+    # ... (The progress_bar update) ...
+
+    # REPLACE EVERYTHING BELOW THIS POINT WITH THE NEW CODE:
     
-    st.success(f"Best result from {best_result['model']}: {best_result['quality_score']} ({best_result['status']})")
-    st.code(best_result['normalized_output'], language="markdown" if not best_result["error"] else "text")
+    # --- DISPLAY ALL RESULTS ---
+    st.subheader("📡 Multi-Vector Response Array")
+    
+    # Sort results by quality score descending
+    sorted_results = sorted(evaluated_results, key=lambda x: x["quality_score"], reverse=True)
+    
+    # Create tabs for cleaner navigation
+    tabs = st.tabs([f"{r['model'].split('/')[0]} ({r['quality_score']})" for r in sorted_results])
+    
+    for i, tab in enumerate(tabs):
+        with tab:
+            result = sorted_results[i]
+            col1, col2 = st.columns([1, 4])
+            with col1:
+                st.metric("Score", result["quality_score"])
+                st.write(f"**Status:** {result['status']}")
+                st.write(f"**Latency:** {result['time']:.2f}s")
+            with col2:
+                st.code(result['normalized_output'], language="text")
+                with st.expander("View Raw Payload"):
+                    st.text(result['encoding'])
