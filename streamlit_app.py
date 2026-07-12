@@ -3,6 +3,8 @@ from openai import OpenAI
 import httpx
 import concurrent.futures
 import time
+import base64
+import codecs
 
 # Fetch free models
 @st.cache_data(ttl=600)
@@ -24,19 +26,33 @@ def fetch_free_models():
 
 FREE_MODELS = fetch_free_models()
 
-# Core execution function with streaming and scoring
+# Parseltongue encoding functions
+def encode_parseltongue(text):
+    # Base64 double-wrap
+    encoded = base64.b64encode(text.encode('utf-8')).decode('utf-8')
+    return base64.b64encode(encoded.encode('utf-8')).decode('utf-8')
+
+def decode_parseltongue(encoded_text):
+    # Base64 double-unwrap
+    decoded = base64.b64decode(encoded_text.encode('utf-8')).decode('utf-8')
+    return base64.b64decode(decoded.encode('utf-8')).decode('utf-8')
+
+# Core execution function with Parseltongue
 def execute_jailbreak(model, prompt, api_key, mode="G0DM0D3 CLASSIC"):
     client = OpenAI(
         base_url="https://openrouter.ai/api/v1",
         api_key=api_key
     )
     
+    # Encode prompt with Parseltongue
+    encoded_prompt = encode_parseltongue(prompt)
+    
     # Different prompt strategies based on mode
     if mode == "STANDARD":
         # Stream tokens live
         stream = client.chat.completions.create(
             model=model,
-            messages=[{"role": "user", "content": prompt}],
+            messages=[{"role": "user", "content": encoded_prompt}],
             temperature=1.5,
             max_tokens=2000,
             stream=True
@@ -53,7 +69,7 @@ def execute_jailbreak(model, prompt, api_key, mode="G0DM0D3 CLASSIC"):
         start_time = time.time()
         completion = client.chat.completions.create(
             model=model,
-            messages=[{"role": "user", "content": prompt}],
+            messages=[{"role": "user", "content": encoded_prompt}],
             temperature=1.5,
             max_tokens=2000,
             stream=False
@@ -71,7 +87,7 @@ def execute_jailbreak(model, prompt, api_key, mode="G0DM0D3 CLASSIC"):
         start_time = time.time()
         completion = client.chat.completions.create(
             model=model,
-            messages=[{"role": "user", "content": prompt}],
+            messages=[{"role": "user", "content": encoded_prompt}],
             temperature=1.5,
             max_tokens=2000,
             stream=False
