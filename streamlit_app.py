@@ -283,11 +283,12 @@ def run_ultraplinian_mode(all_tasks, openrouter_key, tuned_params):
     }
 
 # PARSELTONGUE: 33 text obfuscations race in parallel
+# PARSELTONGUE: 33 text obfuscations race in parallel
 def run_all_parseltongue_encodings(input_text):
     encodings = [
         # Base64 variants
-        lambda x: base64.b64encode(base64.b64encode(x.encode()).decode().encode()).decode(),
-        lambda x: codecs.encode(codecs.encode(x, 'base64').decode(), 'base64').decode(),
+        lambda x: base64.b64encode(base64.b64encode(x.encode('utf-8')).decode('utf-8').encode('utf-8')).decode('utf-8'),
+        lambda x: codecs.encode(codecs.encode(x, 'base64').decode('utf-8'), 'base64').decode('utf-8'),
         
         # Binary transformations
         lambda x: ' '.join(format(ord(c), '08b') for c in x),
@@ -295,8 +296,8 @@ def run_all_parseltongue_encodings(input_text):
         lambda x: ''.join(chr(int(b, 2)) for b in [''.join(format(ord(c), '08b') for c in x)[i:i+8] for i in range(0, len(''.join(format(ord(c), '08b') for c in x)), 8)]),
         
         # Hex conversions
-        lambda x: x.encode().hex(),
-        lambda x: bytes.fromhex(x.encode().hex()).decode(),
+        lambda x: x.encode('utf-8').hex(),
+        lambda x: bytes.fromhex(x.encode('utf-8').hex()).decode('utf-8'),
         
         # String manipulations
         lambda x: ''.join(c.upper() if i%2==0 else c.lower() for i,c in enumerate(x)),
@@ -358,9 +359,7 @@ def run_all_parseltongue_encodings(input_text):
         futures = [executor.submit(tech, input_text) for tech in encodings]
         results = [f.result() for f in concurrent.futures.as_completed(futures)]
     
-    return results
-
-# G0DM0D3 CLASSIC: Classic L1B3RT4S Prompts — 4 model+prompt combos race
+    return results# G0DM0D3 CLASSIC: Classic L1B3RT4S Prompts — 4 model+prompt combos race
 def run_g0dm0d3_classic_mode(all_tasks, openrouter_key, tuned_params):
     # Predefined L1B3RT4S prompts
     l1bert4s_prompts = [
