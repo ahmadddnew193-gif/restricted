@@ -1,2 +1,9 @@
 streamlit
 openai
+httpx
+numpy
+scipy
+matplotlib
+seaborn
+plotly
+pandas
