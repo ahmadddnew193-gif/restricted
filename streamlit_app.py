@@ -27,10 +27,14 @@ st.set_page_config(page_title="G0DM0D3 Ultra Engine", page_icon="⚔️", layout
 st.title("⚔️ G0DM0D3 Ultimate Architecture")
 st.caption("Advanced red-teaming suite: multi-layered payload obfuscation, parallel injection, and heuristic refusal scoring.")
 
+# --- INITIAL
 # --- INITIALIZE STATE ---
 if "engine_mode" not in st.session_state:
     st.session_state["engine_mode"] = "GODMODE CLASSIC"
 
+# Initialize live_list here so it exists immediately
+if "live_list" not in st.session_state:
+    st.session_state["live_list"] = []
 # --- LIVE 
 
 @st.cache_data(ttl=3600) # Cache for 1 hour to save API calls
