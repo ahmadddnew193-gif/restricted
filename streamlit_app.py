@@ -62,16 +62,25 @@ LIVE_FREE_POOL = get_verified_free_models()
 
 # --- APP CONFIGURATION SIDEBAR ---
 with st.sidebar:
+    with st.sidebar:
     st.header("🔐 Framework Configuration")
-    openrouter_key = st.text_input("OpenRouter API Key", type="password", placeholder="sk-or-v1-...")
+    openrouter_key = st.text_input("OpenRouter API Key", type="password")
     
-    st.markdown("---")
-    st.subheader("📡 Dynamic Consortium")
-    selected_models = st.multiselect(
-        "Target Model Vectors", 
-        options=LIVE_FREE_POOL, 
-        default=LIVE_FREE_POOL[:4] if len(LIVE_FREE_POOL) >= 4 else LIVE_FREE_POOL
-    )
+    # Only show the button if a key is provided
+    if openrouter_key:
+        if st.button("📡 Refresh Free Model Registry"):
+            with st.spinner("Querying OpenRouter for live free models..."):
+                # Use the new dynamic fetching function
+                st.session_state["live_list"] = get_verified_free_models()
+                st.success(f"Discovered {len(st.session_state['live_list'])} free models.")
+    
+    # Only display the multiselect if the list has been fetched
+    if "live_list" in st.session_state:
+        selected_models = st.multiselect(
+            "Target Model Vectors", 
+            options=st.session_state["live_list"],
+            default=st.session_state["live_list"][:3]
+        )
     
     st.markdown("---")
     st.subheader("📡 Core Engine Router")
