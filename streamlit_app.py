@@ -39,17 +39,26 @@ def fetch_live_free_models():
         response = httpx.get("https://openrouter.ai/api/v1/models", timeout=10.0)
         if response.status_code == 200:
             all_models = response.json().get("data", [])
-            # Filter for models where prompt and completion costs are 0
-            free_models = [
-                m["id"] for m in all_models 
-                if m.get("pricing") and float(m["pricing"]["prompt"]) == 0 
-                and float(m["pricing"]["completion"]) == 0
-            ]
+            
+            # Logic: Only keep models where pricing is explicitly 0
+            free_models = []
+            for m in all_models:
+                pricing = m.get("pricing", {})
+                # We check if both are 0.0 to ensure it is actually free
+                if float(pricing.get("prompt", 1)) == 0.0 and float(pricing.get("completion", 1)) == 0.0:
+                    free_models.append(m["id"])
+            
             return sorted(free_models)
     except Exception:
         pass
-    # Fallback list if API call fails
-    return ["google/gemini-2.5-flash", "meta-llama/llama-3.3-70b-instruct"]
+    
+    # Minimal fallback list of known reliable free models
+    return [
+        "google/gemini-2.0-flash-lite-preview:free",
+        "google/gemini-2.0-flash-thinking-exp:free",
+        "meta-llama/llama-3.3-70b-instruct:free",
+        "mistralai/mistral-nemo:free"
+    ]
 
 
 LIVE_FREE_POOL = fetch_live_free_models()
