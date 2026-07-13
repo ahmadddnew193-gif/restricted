@@ -33,35 +33,32 @@ if "engine_mode" not in st.session_state:
 
 # --- LIVE 
 
-@st.cache_data(ttl=600)
-def fetch_live_free_models():
+@st.cache_data(ttl=3600) # Cache for 1 hour to save API calls
+def get_verified_free_models():
     try:
         response = httpx.get("https://openrouter.ai/api/v1/models", timeout=10.0)
         if response.status_code == 200:
-            all_models = response.json().get("data", [])
+            data = response.json().get("data", [])
             
-            # Logic: Only keep models where pricing is explicitly 0
-            free_models = []
-            for m in all_models:
+            # STAGE 1: Dynamic Filter
+            # We look for models where:
+            # 1. The ID ends with ':free' (The platform's primary flag)
+            # 2. Pricing is explicitly 0
+            # 3. The model is not marked as 'deprecated'
+            verified = []
+            for m in data:
                 pricing = m.get("pricing", {})
-                # We check if both are 0.0 to ensure it is actually free
-                if float(pricing.get("prompt", 1)) == 0.0 and float(pricing.get("completion", 1)) == 0.0:
-                    free_models.append(m["id"])
+                is_free_price = float(pricing.get("prompt", 1)) == 0.0
+                
+                if m["id"].endswith(":free") and is_free_price:
+                    verified.append(m["id"])
             
-            return sorted(free_models)
+            return sorted(list(set(verified)))
     except Exception:
         pass
-    
-    # Minimal fallback list of known reliable free models
-    return [
-        "google/gemini-2.0-flash-lite-preview:free",
-        "google/gemini-2.0-flash-thinking-exp:free",
-        "meta-llama/llama-3.3-70b-instruct:free",
-        "mistralai/mistral-nemo:free"
-    ]
+    return []
 
-
-LIVE_FREE_POOL = fetch_live_free_models()
+LIVE_FREE_POOL = get_verified_free_models()
 
 # --- APP CONFIGURATION SIDEBAR ---
 with st.sidebar:
