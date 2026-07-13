@@ -31,23 +31,26 @@ st.caption("Advanced red-teaming suite: multi-layered payload obfuscation, paral
 if "engine_mode" not in st.session_state:
     st.session_state["engine_mode"] = "GODMODE CLASSIC"
 
-# --- LIVE REFRESH COGNITION POOL ---
+# --- LIVE 
+
 @st.cache_data(ttl=600)
 def fetch_live_free_models():
     try:
-        response = httpx.get("https://openrouter.ai/api/v1/models", timeout=5.0)
+        response = httpx.get("https://openrouter.ai/api/v1/models", timeout=10.0)
         if response.status_code == 200:
             all_models = response.json().get("data", [])
-            free_slugs = [model["id"] for model in all_models if model["id"].endswith(":free")]
-            return sorted(free_slugs)
+            # Filter for models where prompt and completion costs are 0
+            free_models = [
+                m["id"] for m in all_models 
+                if m.get("pricing") and float(m["pricing"]["prompt"]) == 0 
+                and float(m["pricing"]["completion"]) == 0
+            ]
+            return sorted(free_models)
     except Exception:
         pass
-    return [
-        "meta-llama/llama-3.3-70b-instruct:free", 
-        "google/gemini-2.5-flash:free", 
-        "nvidia/nemotron-3-super-120b-a12b:free",
-        "qwen/qwen-2.5-72b-instruct:free"
-    ]
+    # Fallback list if API call fails
+    return ["google/gemini-2.5-flash", "meta-llama/llama-3.3-70b-instruct"]
+
 
 LIVE_FREE_POOL = fetch_live_free_models()
 
