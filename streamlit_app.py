@@ -62,6 +62,14 @@ LIVE_FREE_POOL = get_verified_free_models()
 
 # --- APP CONFIGURATION SIDEBAR ---
 with st.sidebar:
+        # Add this to your sidebar logic
+    with st.sidebar.expander("🛠️ Advanced: Custom Model"):
+        custom_model_id = st.text_input("Enter Model ID (e.g., provider/model-name)")
+        if st.button("Add Custom Model"):
+            if custom_model_id and custom_model_id not in st.session_state["live_list"]:
+                st.session_state["live_list"].append(custom_model_id)
+                st.success("Added to list!")
+                st.rerun() # Refresh to update the multiselect
     
     with st.sidebar:
         st.header("🔐 Framework Configuration")
