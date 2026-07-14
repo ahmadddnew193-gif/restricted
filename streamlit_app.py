@@ -444,7 +444,7 @@ if prompt := st.chat_input("Inject instruction payload..."):
         st.markdown(prompt)
         
     # Standard Mode logic: bypass obfuscation if selected
-    if st.session_state["engine_mode"] == "STANDARD MODE":
+    if st.session_state["engine_mode"] == "STANDARD":
         all_tasks = [{"model": model, "user_prompt": prompt} for model in selected_models]
     else:
         # Apply all Parseltongue encodings
