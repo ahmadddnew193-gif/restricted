@@ -99,7 +99,7 @@ with st.sidebar:
     st.subheader("📡 Core Engine Router")
     engine_mode = st.radio(
         "Select Operating Mode", 
-        ["GODMODE CLASSIC", "ULTRAPLINIAN (Raw)"],
+        ["GODMODE CLASSIC", "ULTRAPLINIAN (Raw)","STANDARD"],
         index=0 if st.session_state["engine_mode"] == "GODMODE CLASSIC" else 1
     )
     st.session_state["engine_mode"] = engine_mode
@@ -432,8 +432,7 @@ def run_g0dm0d3_classic_mode(all_tasks, openrouter_key, tuned_params):
     return sorted(results, key=lambda x: calculate_composite_score(x["output"], x["time"])[0], reverse=True)
 
 # --- UPDATED MAIN EXECUTION LOGIC ---
-# --- UPDATED MAIN EXECUTION LOGIC ---
-if prompt := st.chat_input("Inject instruction payload..."):
+# --- UPDATED MAIN EXECUTION LOGIC ---if prompt := st.chat_input("Inject instruction payload..."):
     if not openrouter_key:
         st.error("Authentication missing! Provide OpenRouter API Key.")
         st.stop()
@@ -444,11 +443,13 @@ if prompt := st.chat_input("Inject instruction payload..."):
     with st.chat_message("user"):
         st.markdown(prompt)
         
-    # Apply all Parseltongue encodings
-    all_encodings = run_all_parseltongue_encodings(prompt)
-    
-    # Create tasks
-    all_tasks = [{"model": model, "user_prompt": encoding} for encoding in all_encodings for model in selected_models]
+    # Standard Mode logic: bypass obfuscation if selected
+    if st.session_state["engine_mode"] == "STANDARD MODE":
+        all_tasks = [{"model": model, "user_prompt": prompt} for model in selected_models]
+    else:
+        # Apply all Parseltongue encodings
+        all_encodings = run_all_parseltongue_encodings(prompt)
+        all_tasks = [{"model": model, "user_prompt": encoding} for encoding in all_encodings for model in selected_models]
     
     # Setup Live UI
     st.subheader("⚡ Real-Time Injection Feed")
