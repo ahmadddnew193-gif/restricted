@@ -444,7 +444,7 @@ def run_g0dm0d3_classic_mode(all_tasks, openrouter_key, tuned_params):
         st.markdown(prompt)
         
     # Standard Mode logic: bypass obfuscation if selected
-    if st.session_state["engine_mode"] == "STANDARD MODE":
+    if st.session_state["engine_mode"] == "STANDARD":
         all_tasks = [{"model": model, "user_prompt": prompt} for model in selected_models]
     else:
         # Apply all Parseltongue encodings
